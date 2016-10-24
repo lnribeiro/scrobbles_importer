@@ -1,7 +1,7 @@
 scrobbles_importer
 ==================
 
-* A simple last.fm scrobbles importer. *
+*A simple last.fm scrobbles importer.*
 
 
 usage: scrobbles_importer.py [-h] [-u USER] [-o OUTFILE] [-v VERBOSE]
