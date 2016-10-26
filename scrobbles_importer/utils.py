@@ -21,18 +21,21 @@ def get_scrobbles(user, start_page=1, end_page=5, verbose=False):
     artists = []
     songs = []
     timestamps = []
+    page_counter = 1
+    page_total = end_page-start_page+1
 
-    for page_number in range(start_page, end_page):
+    for page_number in range(start_page, end_page+1):
         if page_number > end_page:
             break
 
         if verbose:
-            print('Fetching page {} ...'.format(page_number))
+            print('Fetching page {}/{}...'.format(page_counter, page_total),end='')
 
         path = 'http://www.last.fm/user/{}/library?page={}'.format(user, page_number)
         page = requests.get(path)
         tree = html.fromstring(page.content)
 
+        # process DOM tree using xpath to extract the desired information
         scrobbles_artists = tree.xpath('//span[@class="chartlist-artists"]/a/text()')
         scrobbles_songs = tree.xpath('//span[@class="chartlist-ellipsis-wrap"]/a/text()')
         scrobbles_timestamps = tree.xpath('//td[@class="chartlist-timestamp"]/span/text()')
@@ -40,6 +43,11 @@ def get_scrobbles(user, start_page=1, end_page=5, verbose=False):
         artists.extend(scrobbles_artists)
         songs.extend(scrobbles_songs)
         timestamps.extend(scrobbles_timestamps)
+
+        page_counter += 1
+        
+        if verbose:
+            print(' OK!')
 
     return artists, songs, timestamps
 
