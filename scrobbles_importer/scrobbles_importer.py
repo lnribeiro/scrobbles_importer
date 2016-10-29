@@ -54,11 +54,11 @@ def main():
         print('starting page number: {}'.format(start_page))
         print('last page number: {}'.format(end_page))
 
-    artists, songs, timestamps = utils.get_scrobbles(arguments.username,
-                                                     start_page,
-                                                     end_page,
-                                                     verbose)
-    utils.export_scrobbles_to_csv(artists, songs, timestamps,
+    artists, songs, dates, times = utils.get_scrobbles(arguments.username,
+                                                       start_page,
+                                                       end_page,
+                                                       verbose)
+    utils.export_scrobbles_to_csv(artists, songs, dates, times,
                                   arguments.outfile,
                                   delimiter)
 

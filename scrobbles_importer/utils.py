@@ -1,6 +1,56 @@
 from lxml import html
+from dateutil.relativedelta import relativedelta
+import datetime
 import requests
 import csv
+
+def process_timestamp(timestamp, now=None):
+    if now == None:
+        now = datetime.datetime.now()
+    
+    timestamp_split = timestamp.split()
+    
+    if timestamp_split[1] == 'minute' or \
+       timestamp_split[1] == 'minutes' or \
+       timestamp_split[1] == 'hour' or \
+       timestamp_split[1] == 'hours':
+
+           minutes = 0
+           hours = 0
+           # Ex: 'a minute ago' 
+           if timestamp_split[1] == 'minute':
+               minutes = 1
+           # Ex: '4 minutes ago'
+           if timestamp_split[1] == 'minutes':
+               minutes_str = timestamp_split[0]
+               minutes = int(minutes_str)
+           # Ex: 'an hour ago' 
+           if timestamp_split[1] == 'hour':
+               hours = 1
+           # Ex: '10 hours ago'
+           if timestamp_split[1] == 'hours':
+               hours_str = timestamp_split[0]
+               hours = int(hours_str)
+              
+           delta = relativedelta(minutes=minutes,hours=hours)
+           timestamp_date = now-delta
+    else:
+        # Ex: '12 Sep 12:34pm'
+        if len(timestamp_split) == 3:
+            # insert current year in the timestamp
+            timestamp_split.insert(2,str(now.year)) 
+            timestamp = ' '.join(timestamp_split)
+            timestamp_date = datetime.datetime.strptime(timestamp,'%d %b %Y %I:%M%p')   
+        # Ex: '10 Nov 2015, 6:12pm'
+        elif len(timestamp_split) == 4:
+            timestamp_date = datetime.datetime.strptime(timestamp,'%d %b %Y, %I:%M%p')       
+        else:
+            return -1 # error
+            
+    date_str = timestamp_date.strftime('%d/%m/%y')
+    time_str = timestamp_date.strftime('%H:%M')               
+
+    return date_str, time_str
 
 
 def get_last_page(user):
@@ -20,7 +70,8 @@ def get_page_from_header(node_tree):
 def get_scrobbles(user, start_page=1, end_page=5, verbose=False):
     artists = []
     songs = []
-    timestamps = []
+    dates = []
+    times = []
     page_counter = 1
     page_total = end_page-start_page+1
 
@@ -42,19 +93,20 @@ def get_scrobbles(user, start_page=1, end_page=5, verbose=False):
 
         artists.extend(scrobbles_artists)
         songs.extend(scrobbles_songs)
-        timestamps.extend(scrobbles_timestamps)
+        for timestamp in map(process_timestamp, scrobbles_timestamps):
+            dates.append(timestamp[0])
+            times.append(timestamp[1])
 
         page_counter += 1
         
         if verbose:
             print(' OK!')
 
-    return artists, songs, timestamps
+    return artists, songs, dates, times
 
 
-def export_scrobbles_to_csv(art, song, time, filename='scrobbles.csv', delimiter=';'):
+def export_scrobbles_to_csv(artists, songs, dates, times, filename='scrobbles.csv', delimiter=';'):
     with open(filename, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=delimiter)
-        writer.writerow(['artist', 'song', 'timestamp'])
-        for z in zip(art, song, time):
-            writer.writerow(z)
+        for record in zip(artists, songs, dates, times):
+            writer.writerow(record)
