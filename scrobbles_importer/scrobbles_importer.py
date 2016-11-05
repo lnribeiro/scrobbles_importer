@@ -12,7 +12,7 @@ def main():
     parser.add_argument('outfile',
                         action='store',
                         help='csv output file name')
-                            
+
     # optional arguments
     parser.add_argument('--quiet', action='store_true',
                         help='no verbose')
@@ -21,7 +21,7 @@ def main():
                         type=int)
     parser.add_argument('--end', action='store',
                         help='last page to be fetched',
-                        type=int)                        
+                        type=int)
     parser.add_argument('--delimiter', action='store',
                         help='csv delimiter')
 
@@ -40,12 +40,13 @@ def main():
         end_page = last_page
     else:
         end_page = arguments.end
-        
+
     if arguments.start == None:
         start_page = 1
     else:
         if arguments.start > end_page:
-            raise ValueError('provided starting page number is greater than the last page number.')
+            raise ValueError(
+                'provided starting page number is greater than the last page number.')
         else:
             start_page = arguments.start
 
